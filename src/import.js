@@ -13,7 +13,7 @@ class ActorImporter {
     /**
      * Prompt for target path
      */
-    static Prompt = async (parentDirId) => {
+    static async Prompt(parentDirId) {
         new Dialog({
             title: 'Actor Import',
             content: `/data/<input type="text" name="importTarget"></input>`,
