@@ -121,6 +121,9 @@ class ActorImporter {
 
         ui.notifications.info(`Import starting...`);
 
+        console.log(directories);
+        console.log(files);
+
         for(const directory of directories.filter(d => d.TokenCount > 0)){
             if(directory.Id === null || directory.Id === undefined){
                 const createdFolder = await Folder.create({
