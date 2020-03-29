@@ -1,0 +1,14 @@
+{
+    "name": "create-actors-from-folder",
+    "title": "Create Actors from Folder",
+    "description": "Creates all actors from specified folder.",
+    "author": "crobibero",
+    "version": "0.1.0",
+    "minimumCoreVersion": "0.5.0",
+    "scripts": [
+      "./import.js"
+    ],
+    "url": "https://github.com/crobibero/fvtt-create-actors-from-folder",
+    "manifest": "",
+    "download": ""
+  }
