@@ -6,9 +6,9 @@
     "version": "0.1.0",
     "minimumCoreVersion": "0.5.0",
     "scripts": [
-      "./import.js"
+      "./src/import.js"
     ],
     "url": "https://github.com/crobibero/fvtt-create-actors-from-folder",
-    "manifest": "",
-    "download": ""
+    "manifest": "https://raw.githubusercontent.com/crobibero/fvtt-create-actors-from-folder/master/module.json",
+    "download": "https://github.com/crobibero/fvtt-create-actors-from-folder/archive/master.zip"
   }
