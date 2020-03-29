@@ -3,7 +3,7 @@
     "title": "Create Actors from Folder",
     "description": "Creates all actors from specified folder.",
     "author": "crobibero",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "minimumCoreVersion": "0.5.0",
     "scripts": [
       "./src/import.js"

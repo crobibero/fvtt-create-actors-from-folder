@@ -65,6 +65,7 @@ class ActorImporter {
      * Begin import
      */
     static async Import(parentDirId, source, target){
+        console.log(parentDirId);
         /**
          * Recursivly get all images
          */
@@ -73,8 +74,7 @@ class ActorImporter {
         
             for(const dir of browseResult.dirs){
                 const dirName = dir.split('/').pop();
-                const dirNameLower = dirName.toLowerCase();
-                const dirIndex = directories.findIndex(d => d.Name.toLowerCase() === dirNameLower);
+                const dirIndex = GetDirectoryIndex(directories, dirName)
     
                 if(dirIndex < 0){
                     directories.push({
@@ -89,7 +89,6 @@ class ActorImporter {
             }
 
             const fileParent = target.split('/').pop();
-            const fileParentLower = fileParent.toLowerCase();
             for(const file of browseResult.files){
                 const fileLower = file.toLowerCase();
                 if(fileLower.endsWith('.jpg') || fileLower.endsWith('.png')){
@@ -100,10 +99,18 @@ class ActorImporter {
                         Path: file
                     });       
                     
-                    const dirIndex = directories.findIndex(d => d.Name.toLowerCase() === fileParentLower);
+                    const dirIndex = GetDirectoryIndex(directories, fileParent);
                     directories[dirIndex].TokenCount++;
                 }
             }
+        }
+
+        const GetDirectoryIndex = (directories, name) => {
+            name = name.toLowerCase();
+            let dirIndex = directories.findIndex(d => d.Name.toLowerCase() === name);
+            // if directory not found, set to first parent
+            if(dirIndex < 0) dirIndex = 0;
+            return dirIndex;
         }
 
         const directories = [];
@@ -137,7 +144,7 @@ class ActorImporter {
         }
 
         for(const file of files){
-            const dirIndex = directories.findIndex(d => d.Name.toLowerCase() === file.Parent.toLowerCase());
+            const dirIndex = GetDirectoryIndex(directories, file.Parent);
             await Actor.create({
                 name: file.Name,
                 type: "character",
