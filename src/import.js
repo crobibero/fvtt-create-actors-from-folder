@@ -146,7 +146,7 @@ class ActorImporter {
         for(const file of files){
             const dirIndex = GetDirectoryIndex(directories, file.Parent);
             await Actor.create({
-                name: file.Name,
+                name: decodeURIComponent(file.Name),
                 type: "character",
                 img: file.Path,
                 folder: directories[dirIndex].Id
