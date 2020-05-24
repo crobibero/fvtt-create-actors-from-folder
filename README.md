@@ -1,7 +1,8 @@
 # Foundry Virtual Tabletop - Create Actors from Folder
 
+Manifest: https://raw.githubusercontent.com/crobibero/fvtt-create-actors-from-folder/master/module.json
+
 Usage:
 1. Create folder under Actors
 2. Right click folder -> `Import Actors from folder`
-3. Enter relative folder path from fvtt data directory
-4. Confirm subfolders. Files are not displayed in confirmation dialog.
+3. Select folder that contains all actors to create
