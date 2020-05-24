@@ -1,23 +1,34 @@
-<form autocomplete="off" enctype="multipart/form-data">
+<form class="filepicker-body {{ cssClass }}" autocomplete="off" enctype="multipart/form-data">
+    <header class="filepicker-header">
 
-    {{!-- File Picker Sources --}}
-    <nav class="tabs">
-        {{#each sources as |source id|}}
-        <a class="item" data-tab="{{id}}"><i class="{{source.icon}}"></i> {{source.label}}</a>
-        {{/each}}
-    </nav>
+        <nav class="tabs">
+            {{#each sources as |source id|}}
+            <a class="item" data-tab="{{id}}"><i class="{{source.icon}}"></i> {{source.label}}</a>
+            {{/each}}
+        </nav>
 
-    <section class="filepicker-body">
         <div class="form-group current-dir">
-            <button class="back" {{#unless canGoBack}}disabled{{/unless}}>
+            <button type="button" class="back" data-action="back" {{#unless canGoBack}}disabled{{/unless}}>
                 <i class="fas fa-level-up-alt fa-flip-horizontal fa-fw"></i>
             </button>
-            <input type="text" name="target" value="{{target}}"/>
+            <div class="form-fields">
+                <input type="text" name="target" value="{{target}}"/>
+            </div>
+            {{#if user.isGM}}
+            {{#if canUpload}}
+            <button type="button" data-action="mkdir" title="{{ localize "FILES.CreateDirectory" }}">
+                <i class="fas fa-folder-plus"></i>
+            </button>
+            {{/if}}
+            <button class="privacy" type="button" data-action="toggle-privacy" title="{{ localize "FILES.TogglePrivacy" }}">
+                <i class="fas fa-eye-slash"></i>
+            </button>
+            {{/if}}
         </div>
 
         {{#if isS3}}
         <div class="form-group bucket">
-            <label>S3 Bucket</label>
+            <label>{{ localize "FILES.S3Label" }}</label>
             <select name="bucket">
                 {{#select source.bucket}}
                 {{#each source.buckets}}
@@ -29,26 +40,95 @@
         {{/if}}
 
         <div class="form-group filter-dir">
-            <label for="filter">Filter Results</label>
+            <label for="filter">{{ localize "FILES.FilterLabel" }}</label>
             <input type="text" name="filter" placeholder="Search"/>
         </div>
 
-        {{#unless noResults}}
-        <ol class="file-directory">
+        <div class="form-group">
+            <label for="displayMode">{{ localize "FILES.DisplayMode" }}</label>
+            <div class="form-fields display-modes">
+                <a class="display-mode" title="{{ localize 'FILES.DisplayModeList' }}" data-mode="list">
+                    <i class="fas fa-bars"></i>
+                </a>
+                <a class="display-mode" title="{{ localize 'FILES.DisplayModeThumbs' }}" data-mode="thumbs">
+                    <i class="fas fa-th-list"></i>
+                </a>
+                <a class="display-mode" title="{{ localize 'FILES.DisplayModeTiles' }}" data-mode="tiles">
+                    <i class="fas fa-th-large"></i>
+                </a>
+                <a class="display-mode" title="{{ localize 'FILES.DisplayModeImages' }}" data-mode="images">
+                    <i class="fas fa-image"></i>
+                </a>
+            </div>
+        </div>
+
+        {{#if tileSize}}
+        <div class="form-group tile-size">
+            <label>{{ localize "FILES.TileSize" }}</label>
+            <div class="form-fields">
+                <input type="text" data-dtype="Number" name="tileSize" placeholder="In Pixels" value="{{ tileSize }}"/>
+                <span class="units">(pixels)</span>
+            </div>
+            <p class="hint">{{ localize "FILES.TileSizeHint" }}</p>
+        </div>
+        {{/if}}
+    </header>
+
+    <section class="filepicker-body">
+        {{#if dirs}}
+        <ol class="directory folders-list details-list">
             {{#each dirs}}
-            <li class="dir" data-path="{{this.path}}">
+            <li class="dir {{#if this.private}}private{{/if}}" data-path="{{this.path}}">
                 <i class="fas fa-folder fa-fw"></i>{{this.name}}
             </li>
             {{/each}}
+        </ol>
+        {{/if}}
+
+        {{#if files}}
+        {{#if (eq displayMode "list")}}
+        <ol class="directory files-list details-list">
             {{#each files}}
             <li class="file" data-path="{{this.url}}">
                 <i class="fas fa-file fa-fw"></i>{{this.name}}
             </li>
             {{/each}}
         </ol>
-        {{else}}
-        <p class="note">No matching results found in this location.</p>
-        {{/unless}}
+
+        {{else if (eq displayMode "thumbs")}}
+        <ol class="directory files-list thumbs-list">
+            {{#each files}}
+            <li class="file flexrow" data-path="{{this.url}}">
+                <img data-src="{{ this.img }}" width="48" height="48"/>
+                <span class="filename">{{this.name}}</span>
+            </li>
+            {{/each}}
+        </ol>
+
+        {{else if (eq displayMode "tiles")}}
+        <ol class="directory files-list tiles-list">
+            {{#each files}}
+            <li class="file" data-path="{{this.url}}">
+                <img data-src="{{ this.img }}" width="100" height="100" title="{{ this.name }}"/>
+            </li>
+            {{/each}}
+        </ol>
+
+        {{else if (eq displayMode "images")}}
+        <ol class="directory files-list images-list">
+            {{#each files}}
+            <li class="file" data-path="{{this.url}}">
+                <img data-src="{{ this.img }}" title="{{ this.name }}"/>
+                <span class="filename">{{this.name}}</span>
+            </li>
+            {{/each}}
+        </ol>
+        {{/if}}
+        {{/if}}
+
+        {{#if noResults}}
+        <p class="note">{{ localize "FILES.NoResults" }}</p>
+        {{/if}}
     </section>
 
     <footer class="form-footer">

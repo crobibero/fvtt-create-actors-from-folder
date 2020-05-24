@@ -1,5 +1,5 @@
 class ActorImporter extends FilePicker {
-    constructor (options = {}){
+    constructor(options = {}) {
         super(options);
         this._initHooks();
     }
@@ -15,26 +15,30 @@ class ActorImporter extends FilePicker {
                 }
             })
         })
-    }    
+    }
+
+    get actorTypes() {
+        return game.system.entityTypes.Actor;
+    }
 
     /**
      * Override Title
      */
-    get title(){
+    get title() {
         return "Actor Directory Browser";
     }
 
     /**
      * Override Can Upload
      */
-    get canUpload(){
+    get canUpload() {
         return false;
     }
 
     /**
      * Extend Browse to store current directory
      */
-    async browse(target, options={}) {
+    async browse(target, options = {}) {
         this.TargetDirectory = await super.browse(target, options);
     }
 
@@ -46,25 +50,51 @@ class ActorImporter extends FilePicker {
             super.defaultOptions,
             {
                 template: "modules/create-actors-from-folder/src/templates/actor-import.html"
-            }            
+            }
         );
     }
 
     /**
      * Override Submit handler to begin import
      */
-    _onSubmit(ev){
+    _onSubmit(ev) {
         ev.preventDefault();
-        this._startImport();
+        this._promptOptions();
+        // this._startImport();
         this.close();
+    }
+
+    async _promptOptions() {
+        let templateData = { types: game.system.entityTypes["Actor"] };
+        let dlg = await renderTemplate("modules/create-actors-from-folder/src/templates/actor-import-options.html", templateData);
+
+        new Dialog({
+            title: "Create Actor Options",
+            content: dlg,
+            buttons: {
+                create: {
+                    icon: '<i class="fas fa-check"></i>',
+                    label: "Create Actors",
+                    callback: dlg => {
+                        let formElement = dlg[0].children[0];
+                        this._startImport(validateForm(formElement));
+                    }
+                }
+            },
+            default: "create"
+        }).render(true);
     }
 
     /**
      * Import Actors from selected Directory
      */
-    async _startImport() {
+    async _startImport(options) {
         this.Directories = [];
         this.Files = [];
+
+        const actorType = options.type;
+        const dontCreateDuplicate = options.duplicate;
+        const actorSet = new Set();
 
         const parentDirectory = game.folders.get(this.ParentDirectoryId);
         this.Directories.push({
@@ -74,17 +104,24 @@ class ActorImporter extends FilePicker {
         });
 
         const currentDirectory = super._inferCurrentDirectory(this.TargetDirectory.target);
-        
+
         await this._browseInternal(
             currentDirectory[0],
             currentDirectory[1]
         );
 
+        // Populate set with existing actor names
+        if(dontCreateDuplicate){
+            for(let entity of game.actors.entities){
+                actorSet.add(entity.data.name);
+            }
+        }
+
         ui.notifications.info('[Actor Import] Starting');
 
         let index = 0;
-        for(const directory of this.Directories.filter(d => d.TokenCount > 0)){
-            if(directory.Id === null || directory.Id === undefined){
+        for (const directory of this.Directories.filter(d => d.TokenCount > 0)) {
+            if (directory.Id === null || directory.Id === undefined) {
                 const createdFolder = await Folder.create({
                     name: directory.Name,
                     parent: this.ParentDirectoryId,
@@ -93,29 +130,35 @@ class ActorImporter extends FilePicker {
 
                 directory.Id = createdFolder.data._id;
                 index++;
-                if(index % 100 === 0)
-                {
+                if (index % 100 === 0) {
                     ui.notifications.info(`[Actor Import] Status: ${index} folders created`);
                 }
             }
         }
 
         index = 0;
-        for(const file of this.Files){
+        for (const file of this.Files) {
             let dirIndex = this._getDirectoryIndex(file.Parent);
+            const actorName = decodeURIComponent(file.Name);
             dirIndex = dirIndex < 0 ? 0 : dirIndex;
+            if(dontCreateDuplicate && actorSet.has(actorName)){
+                continue;
+            }
+            else if(dontCreateDuplicate){
+                actorSet.add(actorName);
+            }
+
             await Actor.create({
                 name: decodeURIComponent(file.Name),
-                type: "character",
+                type: actorType,
                 img: file.Path,
                 folder: this.Directories[dirIndex].Id
             })
 
             index++;
-                if(index % 100 === 0)
-                {
-                    ui.notifications.info(`[Actor Import] Status: ${index} actors created`);
-                }
+            if (index % 100 === 0) {
+                ui.notifications.info(`[Actor Import] Status: ${index} actors created`);
+            }
         }
 
         ui.notifications.info(`[Actor Import] Complete. Imported ${index} actors.`);
@@ -133,10 +176,10 @@ class ActorImporter extends FilePicker {
     async _browseInternal(base, target) {
         let currentBrowseResult = await FilePicker.browse(base, target);
 
-        for(const dir of currentBrowseResult.dirs){
+        for (const dir of currentBrowseResult.dirs) {
             const dirName = dir.split('/').pop();
             const dirIndex = this._getDirectoryIndex(dirName);
-            if(dirIndex < 0){
+            if (dirIndex < 0) {
                 this.Directories.push({
                     Name: dirName,
                     Id: null,
@@ -149,16 +192,16 @@ class ActorImporter extends FilePicker {
         }
 
         const fileParent = target.split('/').pop();
-        for(const file of currentBrowseResult.files){
+        for (const file of currentBrowseResult.files) {
             const fileLower = file.toLowerCase();
-            if(fileLower.endsWith('.jpg') || fileLower.endsWith('.png')){
+            if (fileLower.endsWith('.jpg') || fileLower.endsWith('.png')) {
                 const fileName = file.split('/').pop();
                 this.Files.push({
                     Name: fileName.substring(0, fileName.lastIndexOf('.')),
                     Parent: fileParent,
                     Path: file
-                });       
-                
+                });
+
                 let dirIndex = this._getDirectoryIndex(fileParent);
                 dirIndex = dirIndex < 0 ? 0 : dirIndex;
                 this.Directories[dirIndex].TokenCount++;
@@ -166,7 +209,7 @@ class ActorImporter extends FilePicker {
         }
     }
 
-    _getDirectoryIndex(name){
+    _getDirectoryIndex(name) {
         name = name.toLowerCase();
         return this.Directories.findIndex(d => d.Name.toLowerCase() === name);
     }
@@ -177,5 +220,5 @@ class ActorImporter extends FilePicker {
  */
 Hooks.on('init', () => {
     // TODO has permission?
-    new ActorImporter({type:"directory"});
+    new ActorImporter({ type: "directory" });
 });

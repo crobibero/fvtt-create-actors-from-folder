@@ -1,0 +1,16 @@
+<form id="actor-import-options" autocomplete="off" onsubmit="event.preventDefault();">
+    <div class="form-group">
+        <label>{{localize "Type"}}</label>
+        <select name="type">
+        {{#each types}}
+            <option value="{{this}}">{{this}}</option>
+        {{/each}}
+        </select>
+        <p class="notes">{{localize "ENTITY.TypeHint"}}</p>
+    </div>
+
+    <div class="form-group">
+        <label>Don't create actors that exist with name:</label>
+        <input name="duplicate" type="checkbox">
+    </div>
+</form>
