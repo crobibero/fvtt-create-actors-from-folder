@@ -113,7 +113,7 @@ class ActorImporter extends FilePicker {
         // Populate set with existing actor names
         if(dontCreateDuplicate){
             for(let entity of game.actors.entities){
-                actorSet.add(entity.data.name);
+                actorSet.add(entity.data.name.toUpperCase());
             }
         }
 
@@ -140,12 +140,13 @@ class ActorImporter extends FilePicker {
         for (const file of this.Files) {
             let dirIndex = this._getDirectoryIndex(file.Parent);
             const actorName = decodeURIComponent(file.Name);
+            const actorNameUpper = actorName.toUpperCase();
             dirIndex = dirIndex < 0 ? 0 : dirIndex;
-            if(dontCreateDuplicate && actorSet.has(actorName)){
+            if(dontCreateDuplicate && actorSet.has(actorNameUpper)){
                 continue;
             }
             else if(dontCreateDuplicate){
-                actorSet.add(actorName);
+                actorSet.add(actorNameUpper);
             }
 
             await Actor.create({
