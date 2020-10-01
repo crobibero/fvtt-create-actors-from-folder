@@ -195,7 +195,7 @@ class ActorImporter extends FilePicker {
         const fileParent = target.split('/').pop();
         for (const file of currentBrowseResult.files) {
             const fileLower = file.toLowerCase();
-            if (fileLower.endsWith('.jpg') || fileLower.endsWith('.png')) {
+            if (fileLower.endsWith('.jpg') || fileLower.endsWith('.png') || fileLower.endsWith('.svg')) {
                 const fileName = file.split('/').pop();
                 this.Files.push({
                     Name: fileName.substring(0, fileName.lastIndexOf('.')),
