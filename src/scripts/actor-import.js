@@ -7,7 +7,7 @@ class ActorImporter extends FilePicker {
     _initHooks() {
         Hooks.on("getActorDirectoryFolderContext", (html, list) => {
             list.push({
-                name: "Create Actors from folder",
+                name: "Create Actors From Folder",
                 icon: "<i class='fas fa-user-friends'></i>",
                 callback: async directory => {
                     this.ParentDirectoryId = directory.parent().attr("data-folder-id");
@@ -76,8 +76,11 @@ class ActorImporter extends FilePicker {
                     icon: '<i class="fas fa-check"></i>',
                     label: "Create Actors",
                     callback: dlg => {
-                        let formElement = dlg[0].children[0];
-                        this._startImport(validateForm(formElement));
+                        const formElement = document.getElementById("actor-import-options");
+                        const form = new FormDataExtended(formElement);
+                        const actorType = document.getElementById("actor-import-type").value;
+                        const dontCreateDuplicate = document.getElementById("actor-import-duplicate").value;
+                        this._startImport(form, actorType, dontCreateDuplicate);
                     }
                 }
             },
@@ -88,12 +91,10 @@ class ActorImporter extends FilePicker {
     /**
      * Import Actors from selected Directory
      */
-    async _startImport(options) {
+    async _startImport(form, actorType, dontCreateDuplicate) {
         this.Directories = [];
         this.Files = [];
 
-        const actorType = options.type;
-        const dontCreateDuplicate = options.duplicate;
         const actorSet = new Set();
 
         const parentDirectory = game.folders.get(this.ParentDirectoryId);
@@ -153,7 +154,12 @@ class ActorImporter extends FilePicker {
                 name: decodeURIComponent(file.Name),
                 type: actorType,
                 img: file.Path,
-                folder: this.Directories[dirIndex].Id
+                folder: this.Directories[dirIndex].Id,
+                sort: 12000,
+                data: {},
+                token: {},
+                items: [],
+                flags: {}
             })
 
             index++;
